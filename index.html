@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SBMCH · Student Roll Directory</title>
+  <meta name="description" content="SBMCH student roll directory — register with your name, class roll and prof roll, then view the roll numbers of every registered student.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">S</span>
+        <span class="brand-text">
+          <strong>SBMCH</strong>
+          <small>Student Roll Directory</small>
+        </span>
+      </div>
+      <div class="header-user" id="header-user" hidden>
+        <span class="header-user-name" id="header-user-name"></span>
+        <button type="button" class="btn btn-ghost" id="logout-btn">Log out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="banner" id="setup-banner" hidden>
+      <strong>Setup required.</strong>
+      This site has no database connection yet. Open <code>config.js</code>, paste your
+      Supabase project URL and anon key, and follow the steps in <code>README.md</code>.
+    </div>
+
+    <div class="alert" id="alert" role="alert" aria-live="polite" hidden></div>
+
+    <!-- ============ AUTH (login / register) ============ -->
+    <section class="card card-narrow" id="auth-view">
+      <div class="tabs" role="tablist" aria-label="Account">
+        <button type="button" class="tab is-active" id="tab-login" role="tab" aria-selected="true" aria-controls="login-form">Log in</button>
+        <button type="button" class="tab" id="tab-register" role="tab" aria-selected="false" aria-controls="register-form">Register</button>
+      </div>
+
+      <form id="login-form" novalidate>
+        <h2>Log in</h2>
+        <p class="lede">Enter the prof roll number you registered with.</p>
+
+        <label for="login-roll">Prof roll number</label>
+        <input id="login-roll" name="roll" type="text" inputmode="text" autocomplete="username"
+               autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="e.g. 21012345" required>
+
+        <button type="submit" class="btn btn-primary btn-block">Log in</button>
+        <p class="hint">First time here? Switch to <button type="button" class="link" id="goto-register">Register</button> and add your details.</p>
+      </form>
+
+      <form id="register-form" hidden novalidate>
+        <h2>Register</h2>
+        <p class="lede">Only SBMCH students need to register. It takes one minute.</p>
+
+        <label for="reg-name">Full name</label>
+        <input id="reg-name" name="full_name" type="text" autocomplete="name" placeholder="e.g. Ananya Sharma" minlength="2" required>
+
+        <label for="class-roll">Class roll number</label>
+        <input id="class-roll" name="class_roll" type="text" autocomplete="off"
+               autocapitalize="none" spellcheck="false" placeholder="e.g. 12" required>
+
+        <label for="prof-roll">Prof roll number</label>
+        <input id="prof-roll" name="prof_roll" type="text" autocomplete="off"
+               autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="e.g. 21012345" required>
+
+        <button type="submit" class="btn btn-primary btn-block">Create account</button>
+        <p class="hint">Already registered? Switch back to <button type="button" class="link" id="goto-login">Log in</button>.</p>
+      </form>
+    </section>
+
+    <!-- ============ PROF ROLL GATE ============ -->
+    <section class="card card-narrow" id="gate-view" hidden>
+      <h2>Verify your prof roll number</h2>
+      <p class="lede">Type the prof roll number you registered with to open the class directory.</p>
+
+      <form id="gate-form" novalidate>
+        <label for="gate-roll">Prof roll number</label>
+        <input id="gate-roll" name="roll" type="text" autocomplete="off"
+               autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="e.g. 21012345" required>
+        <button type="submit" class="btn btn-primary btn-block">Open directory</button>
+      </form>
+    </section>
+
+    <!-- ============ DIRECTORY ============ -->
+    <section class="card" id="directory-view" hidden>
+      <div class="directory-head">
+        <div>
+          <h2>Class directory</h2>
+          <p class="lede" id="directory-count"></p>
+        </div>
+      </div>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col" class="num">#</th>
+              <th scope="col">Prof roll no.</th>
+              <th scope="col">Name</th>
+              <th scope="col">Class roll no.</th>
+            </tr>
+          </thead>
+          <tbody id="directory-body"></tbody>
+        </table>
+      </div>
+
+      <p class="empty" id="directory-empty" hidden></p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">SBMCH · Student Roll Directory</div>
+  </footer>
+
+  <noscript>
+    <div class="wrap"><div class="alert">This page needs JavaScript to run.</div></div>
+  </noscript>
+
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+</html>
