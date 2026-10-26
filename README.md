@@ -4,7 +4,7 @@ A small static website for the students of **SBMCH**.
 
 - **Register** with full name, class roll number and prof roll number.
 - **Log in** with the prof roll number only.
-- After logging in, **verify your prof roll number** to open the class directory, which lists every registered student's **prof roll number, name and class roll number**.
+- After logging in, **verify with your class roll number** to open the class directory, which lists every registered student's **prof roll number, name and class roll number**, with a search box for finding anyone by name or prof roll.
 
 The site is plain HTML/CSS/JS with no build step — push it to GitHub and GitHub Pages serves it.
 

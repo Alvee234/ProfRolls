@@ -8,6 +8,8 @@
   var profile = null;
   var UNLOCK_KEY = "sbmch.unlockedBy";
   var el = {};
+  var roster = [];
+  var loadError = "";
 
   var IDS = [
     "setup-banner", "alert",
@@ -15,6 +17,7 @@
     "goto-register", "goto-login",
     "gate-view", "gate-form", "gate-roll",
     "directory-view", "directory-body", "directory-count", "directory-empty",
+    "directory-search",
     "login-roll", "reg-name", "class-roll", "prof-roll",
     "header-user", "header-user-name", "logout-btn"
   ];
@@ -65,6 +68,7 @@
     el["register-form"].addEventListener("submit", onRegister);
     el["gate-form"].addEventListener("submit", onGate);
     el["logout-btn"].addEventListener("click", onLogout);
+    el["directory-search"].addEventListener("input", render);
   }
 
   function switchTab(which) {
@@ -179,6 +183,7 @@
 
   async function enterSession() {
     showAlert("");
+    el["directory-search"].value = "";
     show("gate");
     el["header-user"].hidden = false;
     el["header-user-name"].textContent = "Loading\u2026";
@@ -224,10 +229,12 @@
     setBusy(form, true);
     showAlert("");
     try {
-      var expected = (await emailForRoll(roll)).toLowerCase();
-      var actual = String((session && session.user && session.user.email) || "").toLowerCase();
-      if (expected !== actual) {
-        showAlert("That does not match the prof roll number you registered with.", "error");
+      if (!profile) {
+        showAlert("We could not load your student record. Reload the page, or register again.", "error");
+        return;
+      }
+      if (norm(roll) !== norm(profile.class_roll)) {
+        showAlert("That does not match the class roll number you registered with.", "error");
         el["gate-roll"].select();
         return;
       }
@@ -264,7 +271,9 @@
       return;
     }
 
-    render(res.data || []);
+    roster = res.data || [];
+    loadError = "";
+    render();
     show("directory");
   }
 
@@ -278,7 +287,15 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function render(rows) {
+  function render() {
+    if (loadError) { renderError(loadError); return; }
+
+    var term = norm(el["directory-search"].value);
+    var rows = roster.filter(function (row) {
+      if (!term) return true;
+      return norm(row.prof_roll).indexOf(term) !== -1 || norm(row.full_name).indexOf(term) !== -1;
+    });
+
     var body = el["directory-body"];
     body.textContent = "";
 
@@ -291,10 +308,19 @@
       body.appendChild(tr);
     });
 
-    el["directory-count"].textContent =
-      rows.length + (rows.length === 1 ? " student registered" : " students registered");
-    el["directory-empty"].hidden = rows.length !== 0;
-    if (rows.length === 0) el["directory-empty"].textContent = "No students have registered yet.";
+    el["directory-count"].textContent = term
+      ? rows.length + " of " + roster.length + " students shown"
+      : roster.length + (roster.length === 1 ? " student registered" : " students registered");
+
+    if (rows.length === 0) {
+      el["directory-empty"].hidden = false;
+      el["directory-empty"].textContent = roster.length === 0
+        ? "No students have registered yet."
+        : "No student matches \u201c" + el["directory-search"].value.trim() + "\u201d.";
+    } else {
+      el["directory-empty"].hidden = true;
+      el["directory-empty"].textContent = "";
+    }
   }
 
   function renderError(text) {
@@ -315,6 +341,10 @@
 
   function value(id) {
     return String(el[id].value || "").replace(/\s+/g, " ").trim();
+  }
+
+  function norm(v) {
+    return String(v == null ? "" : v).replace(/\s+/g, " ").trim().toLowerCase();
   }
 
   function message(err) {

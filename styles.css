@@ -177,7 +177,8 @@ label {
   margin: 0 0 6px;
 }
 
-input[type="text"] {
+input[type="text"],
+input[type="search"] {
   font: inherit;
   font-size: 16px;
   color: var(--ink);
@@ -189,8 +190,10 @@ input[type="text"] {
   width: 100%;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
-input[type="text"]::placeholder { color: #93a0b5; }
-input[type="text"]:focus {
+input[type="text"]::placeholder,
+input[type="search"]::placeholder { color: #93a0b5; }
+input[type="text"]:focus,
+input[type="search"]:focus {
   outline: none;
   border-color: var(--brand);
   box-shadow: 0 0 0 3px rgba(20, 83, 154, 0.15);
@@ -248,7 +251,25 @@ input[type="text"]:focus {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
+  flex-wrap: wrap;
 }
+
+.directory-search {
+  flex: 1 1 240px;
+  max-width: 360px;
+  margin-left: auto;
+}
+
+.directory-search label {
+  display: block;
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.directory-search input { margin-bottom: 0; }
 .directory-head .lede { margin-bottom: 0; }
 
 .table-scroll { overflow-x: auto; }

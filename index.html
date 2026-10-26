@@ -72,15 +72,15 @@
       </form>
     </section>
 
-    <!-- ============ PROF ROLL GATE ============ -->
+    <!-- ============ CLASS ROLL GATE ============ -->
     <section class="card card-narrow" id="gate-view" hidden>
-      <h2>Verify your prof roll number</h2>
-      <p class="lede">Type the prof roll number you registered with to open the class directory.</p>
+      <h2>Verify with your class roll number</h2>
+      <p class="lede">Type the class roll number you registered with to open the class directory.</p>
 
       <form id="gate-form" novalidate>
-        <label for="gate-roll">Prof roll number</label>
+        <label for="gate-roll">Class roll number</label>
         <input id="gate-roll" name="roll" type="text" autocomplete="off"
-               autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="e.g. 21012345" required>
+               autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="e.g. 12" required>
         <button type="submit" class="btn btn-primary btn-block">Open directory</button>
       </form>
     </section>
@@ -91,6 +91,11 @@
         <div>
           <h2>Class directory</h2>
           <p class="lede" id="directory-count"></p>
+        </div>
+        <div class="directory-search">
+          <label for="directory-search">Search</label>
+          <input id="directory-search" type="search" placeholder="Name or prof roll number"
+                 autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
         </div>
       </div>
 
