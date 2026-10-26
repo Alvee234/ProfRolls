@@ -18,7 +18,7 @@
     "gate-view", "gate-form", "gate-roll",
     "directory-view", "directory-body", "directory-count", "directory-empty",
     "directory-search",
-    "login-roll", "reg-name", "class-roll", "prof-roll",
+    "login-roll", "login-session", "reg-name", "class-roll", "prof-roll", "reg-session",
     "header-user", "header-user-name", "logout-btn"
   ];
 
@@ -102,7 +102,12 @@
     event.preventDefault();
     var form = event.target;
     var roll = value("login-roll");
-    if (!roll || notReady()) return;
+    var chosenSession = value("login-session");
+    if (notReady()) return;
+    if (!roll || !chosenSession) {
+      showAlert("Please fill in every field, including your session.", "error");
+      return;
+    }
 
     setBusy(form, true);
     showAlert("");
@@ -113,6 +118,22 @@
       });
       if (res.error) throw res.error;
       session = res.data.session;
+
+      // The session chosen at login must be the one the roll was registered for.
+      await loadProfile();
+      if (profile && profile.session && norm(profile.session) !== norm(chosenSession)) {
+        var stored = profile.session;
+        await client.auth.signOut().catch(function () {});
+        session = null;
+        profile = null;
+        showAlert(
+          "That prof roll number is registered for session " + stored +
+          ", not " + chosenSession + ". Pick session " + stored + " and try again.",
+          "error"
+        );
+        return;
+      }
+
       unlockState("");
       await enterSession();
     } catch (err) {
@@ -128,7 +149,12 @@
     var fullName = value("reg-name");
     var classRoll = value("class-roll");
     var profRoll = value("prof-roll");
-    if (!fullName || !classRoll || !profRoll || notReady()) return;
+    var studentSession = value("reg-session");
+    if (notReady()) return;
+    if (!fullName || !classRoll || !profRoll || !studentSession) {
+      showAlert("Please fill in every field, including your session.", "error");
+      return;
+    }
 
     setBusy(form, true);
     showAlert("");
@@ -156,7 +182,8 @@
         user_id: session.user.id,
         full_name: fullName,
         class_roll: classRoll,
-        prof_roll: profRoll
+        prof_roll: profRoll,
+        session: studentSession
       });
       if (saved.error) {
         await client.auth.signOut().catch(function () {});
@@ -188,16 +215,7 @@
     el["header-user"].hidden = false;
     el["header-user-name"].textContent = "Loading\u2026";
 
-    try {
-      var res = await client
-        .from(cfg.TABLE)
-        .select("full_name,class_roll,prof_roll")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
-      profile = res.error ? null : res.data;
-    } catch (err) {
-      profile = null;
-    }
+    await loadProfile();
 
     el["header-user-name"].textContent = profile ? profile.full_name : "SBMCH student";
 
@@ -209,11 +227,27 @@
     }
   }
 
+  // Loads the signed-in student's own row (name, rolls and session).
+  async function loadProfile() {
+    try {
+      var res = await client
+        .from(cfg.TABLE)
+        .select("full_name,class_roll,prof_roll,session")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+      profile = res.error ? null : res.data;
+    } catch (err) {
+      profile = null;
+    }
+    return profile;
+  }
+
   function toAuth() {
     show("auth");
     el["header-user"].hidden = true;
     el["header-user-name"].textContent = "";
     el["login-form"].reset();
+    el["register-form"].reset();
     switchTab("login");
     showAlert("");
   }
@@ -252,7 +286,7 @@
     try {
       res = await client
         .from(cfg.TABLE)
-        .select("prof_roll,full_name,class_roll")
+        .select("prof_roll,full_name,class_roll,session")
         .order("prof_roll", { ascending: true });
     } catch (err) {
       renderError(message(err));
@@ -271,7 +305,11 @@
       return;
     }
 
-    roster = res.data || [];
+    // Students only ever see the roll list of their own session.
+    var mine = profile ? norm(profile.session) : "";
+    roster = (res.data || []).filter(function (row) {
+      return norm(row.session) === mine;
+    });
     loadError = "";
     render();
     show("directory");
@@ -308,9 +346,10 @@
       body.appendChild(tr);
     });
 
-    el["directory-count"].textContent = term
+    var scope = profile && profile.session ? "Session " + profile.session + " \u00b7 " : "";
+    el["directory-count"].textContent = scope + (term
       ? rows.length + " of " + roster.length + " students shown"
-      : roster.length + (roster.length === 1 ? " student registered" : " students registered");
+      : roster.length + (roster.length === 1 ? " student registered" : " students registered"));
 
     if (rows.length === 0) {
       el["directory-empty"].hidden = false;

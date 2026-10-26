@@ -48,6 +48,14 @@
         <input id="login-roll" name="roll" type="text" inputmode="text" autocomplete="username"
                autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="e.g. 21012345" required>
 
+        <label for="login-session">Session</label>
+        <select id="login-session" name="session" required>
+          <option value="">Select your session</option>
+          <option value="2022-23">2022-23</option>
+          <option value="2023-24">2023-24</option>
+          <option value="2024-25">2024-25</option>
+        </select>
+
         <button type="submit" class="btn btn-primary btn-block">Log in</button>
         <p class="hint">First time here? Switch to <button type="button" class="link" id="goto-register">Register</button> and add your details.</p>
       </form>
@@ -66,6 +74,14 @@
         <label for="prof-roll">Prof roll number</label>
         <input id="prof-roll" name="prof_roll" type="text" autocomplete="off"
                autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="e.g. 21012345" required>
+
+        <label for="reg-session">Session</label>
+        <select id="reg-session" name="session" required>
+          <option value="">Select your session</option>
+          <option value="2022-23">2022-23</option>
+          <option value="2023-24">2023-24</option>
+          <option value="2024-25">2024-25</option>
+        </select>
 
         <button type="submit" class="btn btn-primary btn-block">Create account</button>
         <p class="hint">Already registered? Switch back to <button type="button" class="link" id="goto-login">Log in</button>.</p>
@@ -118,7 +134,7 @@
   </main>
 
   <footer class="site-footer">
-    <div class="wrap">SBMCH · Student Roll Directory</div>
+    <div class="wrap">Developed and edited by = Muntasir Alvee</div>
   </footer>
 
   <noscript>
