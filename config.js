@@ -21,9 +21,9 @@ window.SB_CONFIG = {
   // No mail is ever sent there (confirm email is switched off in Supabase).
   EMAIL_DOMAIN: "sbmch.students",
 
-  // Supabase Auth requires a password for every account. Because this site
-  // logs students in with their prof roll number only, this value is shared by
-  // every account and is visible in the page source on purpose - it is not a
-  // secret. Raise it to at least 12 characters if you want to change it.
+// Supabase Auth requires a password for every account. Because this site
+// logs students in with their prof roll number and session only, this value
+// is shared by every account and is visible in the page source on purpose -
+// it is not a secret. Raise it to at least 12 characters if you want to change it.
   SHARED_PASSPHRASE: "sbmch-students-directory-2026"
 };

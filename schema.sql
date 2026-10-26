@@ -5,7 +5,7 @@ create table if not exists public.students (
   user_id    uuid primary key references auth.users (id) on delete cascade,
   full_name  text not null check (char_length(full_name) between 2 and 120),
   class_roll text not null check (char_length(class_roll) between 1 and 40),
-  prof_roll  text not null unique check (char_length(prof_roll) between 1 and 40),
+  prof_roll  text not null check (char_length(prof_roll) between 1 and 40),
   session    text check (session in ('2022-23', '2023-24', '2024-25')),
   created_at timestamptz not null default now()
 );
@@ -14,6 +14,14 @@ create table if not exists public.students (
 -- Re-running this whole file is safe.
 alter table public.students
   add column if not exists session text check (session in ('2022-23', '2023-24', '2024-25'));
+
+-- The same prof roll number may occur in different sessions, so uniqueness is
+-- per (prof_roll, session) instead of per prof_roll alone. Dropping the old
+-- single-column constraint is safe: it was stricter, so the composite one
+-- always holds. Re-running this file is safe.
+alter table public.students drop constraint if exists students_prof_roll_key;
+alter table public.students drop constraint if exists students_roll_session_key;
+alter table public.students add constraint students_roll_session_key unique (prof_roll, session);
 
 -- Rows that were registered before the session field existed have no session.
 -- Give them one (uncomment and edit), otherwise those students only see other

@@ -2,7 +2,7 @@
 
 A small static website for the students of **SBMCH**.
 
-- **Register** with full name, class roll number, prof roll number and **session** (2022-23, 2023-24 or 2024-25).
+- **Register** with full name, class roll number, prof roll number and **session** (2022-23, 2023-24 or 2024-25). The same prof roll number may be registered once **in each session**.
 - **Log in** with the prof roll number and your session — both must match the details you registered with.
 - After logging in, **verify with your class roll number** to open the class directory. It lists the **prof roll number, name and class roll number** of every registered student **of your own session** — never another session's — with a search box for finding anyone by name or prof roll.
 
@@ -69,9 +69,10 @@ Every later `git push` to `main` re-publishes the site automatically.
 ## How login works (read this)
 
 Students log in with **their prof roll number** plus **the session they registered
-for** — there is no password to type. Under the hood the roll number is hashed
-into a username and matched against the account created at registration, and the
-chosen session is checked against the stored one.
+for** — there is no password to type. Under the hood those two values together
+are hashed into a username and matched against the account created at
+registration (that is what allows the same roll number to exist in another
+session), and the chosen session is checked against the stored one.
 
 **Anyone who knows a student's prof roll number can open that student's session.**
 That is inherent to roll-number-only login, so treat the directory as a class
@@ -88,8 +89,14 @@ Everything lives in the Supabase **Table Editor → students**:
 
 - To remove a student, delete their row here (and optionally their user under
   **Authentication → Users**).
-- The `prof_roll` column has a unique constraint, so a roll number can only be
-  registered once.
+- The `prof_roll` column is unique **together with `session`**, so a roll number
+  may be registered once per session (2022-23 and 2023-24 may both contain
+  `21012345`), but never twice inside the same session.
+
+> **Accounts are tied to roll number *and* session.** If you registered a
+> student before this rule existed, their old account can no longer be matched
+> at login — delete the old row (and its user under **Authentication → Users**)
+> and register them again.
 
 ## Troubleshooting
 
@@ -98,7 +105,7 @@ Everything lives in the Supabase **Table Editor → students**:
 | "Setup required" banner | Fill in both values in `config.js`. |
 | "Turn off email confirmation" after registering | Authentication → Providers → Email → disable **Confirm email**. |
 | "No account is registered with that prof roll number" | That roll never completed registration — use the Register tab. |
-| "That prof roll number is already registered" | It already exists; log in with it instead. |
+| "That prof roll number is already registered for this session" | That roll already belongs to a student in the session you picked; log in with it instead, or pick the other session if the roll was meant for it. |
 | `Could not load the Supabase library` | The CDN was blocked — check the connection / any ad blocker. |
 | Roster stays empty | Re-run `schema.sql` and confirm RLS policies exist on the `students` table. |
 | Directory shows nobody, or the wrong students | Your record has no `session` (it predates the field) or a different one. In **Table Editor → students**, set your row's `session` to `2022-23`, `2023-24` or `2024-25`. |

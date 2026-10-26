@@ -113,7 +113,7 @@
     showAlert("");
     try {
       var res = await client.auth.signInWithPassword({
-        email: await emailForRoll(roll),
+        email: await emailForRoll(roll, chosenSession),
         password: cfg.SHARED_PASSPHRASE
       });
       if (res.error) throw res.error;
@@ -160,7 +160,7 @@
     showAlert("");
     try {
       var signUp = await client.auth.signUp({
-        email: await emailForRoll(profRoll),
+        email: await emailForRoll(profRoll, studentSession),
         password: cfg.SHARED_PASSPHRASE,
         options: { data: { full_name: fullName } }
       });
@@ -168,7 +168,7 @@
       if (!signUp.data.session) {
         var identities = signUp.data.user && signUp.data.user.identities;
         if (identities && identities.length === 0) {
-          throw new Error("That prof roll number is already registered. Use Log in instead.");
+          throw new Error("That prof roll number is already registered for this session. Use Log in instead.");
         }
         throw new Error(
           "Supabase did not sign you in. Either that prof roll number is already registered, " +
@@ -395,7 +395,8 @@
   function loginMessage(err) {
     var text = message(err);
     if (/invalid login credentials/i.test(text)) {
-      return "No account is registered with that prof roll number. Please register first.";
+      return "No account is registered with that prof roll number for that session. " +
+        "Check the session you picked, or register first.";
     }
     if (/rate limit|too many/i.test(text)) {
       return "Too many attempts. Please wait a minute and try again.";
@@ -406,10 +407,11 @@
   function registerMessage(err) {
     var text = message(err);
     if (err && err.code === "23505" || /duplicate key/i.test(text)) {
-      return "That prof roll number is already registered. Use Log in instead, or ask your classmate to correct it.";
+      return "That prof roll number is already registered for this session. " +
+        "Use Log in instead, or ask your classmate to correct it.";
     }
     if (/already registered|user_already_exists/i.test(text)) {
-      return "An account already exists for that prof roll number. Use Log in instead.";
+      return "An account already exists for that prof roll number in this session. Use Log in instead.";
     }
     if (/password/i.test(text)) return "Could not create the account: " + text;
     return "Could not create the account: " + text;
@@ -456,9 +458,11 @@
 
   /* ----------------------------------------------- identity derived from roll */
 
-  // The account email is derived from the prof roll number so that students can
-  // log in with their roll number alone. Two hash functions are combined for a
-  // stable 64-bit value that works identically in every browser.
+  // The account email is derived from the prof roll number TOGETHER WITH the
+  // session, so the same roll number may be registered once per session while
+  // each student still logs in with their roll number and session alone. Two
+  // hash functions are combined for a stable 64-bit value that works
+  // identically in every browser.
   function stableHex(str) {
     var fnv = 0x811c9dc5;
     var djb = 5381;
@@ -474,8 +478,9 @@
     return ("00000000" + n.toString(16)).slice(-8);
   }
 
-  function emailForRoll(roll) {
-    var key = String(roll || "").replace(/\s+/g, " ").trim().toLowerCase();
-    return stableHex(key) + "@" + (cfg.EMAIL_DOMAIN || "sbmch.students");
+  function emailForRoll(roll, session) {
+    var r = String(roll || "").replace(/\s+/g, " ").trim().toLowerCase();
+    var s = String(session || "").replace(/\s+/g, " ").trim().toLowerCase();
+    return stableHex(r + "|" + s) + "@" + (cfg.EMAIL_DOMAIN || "sbmch.students");
   }
 })();
